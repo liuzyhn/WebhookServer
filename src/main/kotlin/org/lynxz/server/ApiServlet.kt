@@ -34,7 +34,10 @@ class ApiServlet : HttpServlet() {
                 loadConfig(it)
                 // access_token有效期7200秒
                 Observable.interval(0, 3600, TimeUnit.SECONDS)
-                        .subscribe { HttpManager.refreshAccessToken() }
+                        .subscribe {
+                            HttpManager.refreshAccessToken()
+                            HttpManager.getTgBotUpdates()
+                        }
             }
         }
     }
@@ -55,8 +58,8 @@ class ApiServlet : HttpServlet() {
             characterEncoding = "UTF-8"
             // 返回给客户端的数据
             writer.apply {
-                //                write("{\"serverTime\":\"${msec2date()}\"}") // 使用println(...) 等效
-                write("${msec2date()} hello, I'm running...") // 使用println(...) 等效
+                // todo 2019.10.5 返回实际调用结果
+                write("{\"serverTime\":\"${msec2date()} hello, I'm running...\"}") // 使用println(...) 等效
                 flush()
                 close()
             }
@@ -79,13 +82,15 @@ class ApiServlet : HttpServlet() {
                 ConstantsPara.jiraUrl = getProperty(KeyNames.jiraUrl)
                 ConstantsPara.defaultNoticeUserName = getProperty(KeyNames.defaultNoticeUserName)
                 ConstantsPara.targetMergeBranch = getProperty(KeyNames.gitlabPushMergeBranch)
+                ConstantsPara.defaultTgBotToken = getProperty(KeyNames.defaultTgBotToken)
+                ConstantsPara.defaultTgUserName = getProperty(KeyNames.defaultTgUserName)
                 println("the corp id is: ${ConstantsPara.dd_corp_id}  ,defaultNoticeUserName = ${ConstantsPara.defaultNoticeUserName}")
             }
         }
     }
 
     //将配置文件放置于 src/main/webapp 目录下
-    fun getConfigPath(fileName: String) = "${servletContext.getRealPath("/")}$fileName"
+    private fun getConfigPath(fileName: String) = "${servletContext.getRealPath("/")}$fileName"
 
     /**
      * 获取header信息
